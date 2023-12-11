@@ -15,7 +15,10 @@ public class StudentService {
     }
 
     public List<Student> getStudents() {
-        return studentRepository.findAll();
+        // sort by id in descending order
+        List<Student> students = studentRepository.findAll();
+        students.sort((s1, s2) -> s1.getId().compareTo(s2.getId()));
+        return students;
     }
 
     public Student getStudentById(Long id) {
@@ -36,5 +39,25 @@ public class StudentService {
             }
             return studentRepository.save((Student) student).toArray();
         }
+    }
+
+    public Student updateStudent(Long id, Student student) {
+        Student student1 = studentRepository.findById(id).orElseThrow(() -> new IllegalStateException("Student with id " + id + " does not exist"));
+        if(student.getName() != null && student.getName().length() > 0 && !student.getName().equals(student1.getName())) {
+            student1.setName(student.getName());
+        }
+        if(student.getEmail() != null && student.getEmail().length() > 0 && !student.getEmail().equals(student1.getEmail())) {
+            if (studentRepository.findStudentByEmail(student.getEmail()).isPresent()) {
+                throw new IllegalStateException("Email already taken");
+            }
+            student1.setEmail(student.getEmail());
+        }
+        if(student.getDob() != null && !student.getDob().equals(student1.getDob())) {
+            student1.setDob(student.getDob());
+        }
+        if(student.getUrl() != null && student.getUrl().length() > 0 && !student.getUrl().equals(student1.getUrl())) {
+            student1.setUrl(student.getUrl());
+        }
+        return studentRepository.save(student1);
     }
 }
